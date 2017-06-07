@@ -1,6 +1,7 @@
 export var google: any;
 
 export interface GoogleMap extends MVCObject {
+  data?: Data;
   constructor(el: HTMLElement, opts?: MapOptions): void;
   panTo(latLng: LatLng|LatLngLiteral): void;
   setZoom(zoom: number): void;
@@ -124,16 +125,30 @@ export interface MapOptions {
   maxZoom?: number;
   disableDoubleClickZoom?: boolean;
   disableDefaultUI?: boolean;
+  scrollwheel?: boolean;
   backgroundColor?: string;
   draggable?: boolean;
   draggableCursor?: string;
   draggingCursor?: string;
   keyboardShortcuts?: boolean;
-  zoomControl?: boolean;
   styles?: MapTypeStyle[];
+  zoomControl?: boolean;
+  zoomControlOptions?: ZoomControlOptions;
   streetViewControl?: boolean;
+  streetViewControlOptions?: StreetViewControlOptions;
   scaleControl?: boolean;
+  scaleControlOptions?: ScaleControlOptions;
   mapTypeControl?: boolean;
+  mapTypeControlOptions?: MapTypeControlOptions;
+  panControl?: boolean;
+  panControlOptions?: PanControlOptions;
+  rotateControl?: boolean;
+  rotateControlOptions?: RotateControlOptions;
+  fullscreenControl?: boolean;
+  fullscreenControlOptions?: FullscreenControlOptions;
+  mapTypeId?: string|MapTypeId;
+  clickableIcons?: boolean;
+  gestureHandling?: 'cooperative'|'greedy'|'none'|'auto';
 }
 
 export interface MapTypeStyle {
@@ -355,4 +370,171 @@ export interface KmlFeatureData {
 export interface KmlMouseEvent extends MouseEvent {
   featureData: KmlFeatureData;
   pixelOffset: Size;
+}
+
+export interface Data extends MVCObject {
+  features: Feature[];
+  constructor(options?: DataOptions): void;
+  addGeoJson(geoJson: Object, options?: GeoJsonOptions): Feature[];
+  remove(feature: Feature): void;
+  setControlPosition(controlPosition: ControlPosition): void;
+  setControls(controls: string[]): void;
+  setDrawingMode(drawingMode: string): void;
+  setMap(map: GoogleMap): void;
+  /* tslint:disable */
+  /*
+  * Tslint configuration check-parameters will prompt errors for these lines of code.
+  * https://palantir.github.io/tslint/rules/no-unused-variable/
+  */
+  setStyle(style: () => void): void;
+  forEach(callback: (feature: Feature) => void): void;
+  /* tslint:enable */
+}
+
+export interface Feature extends MVCObject {
+  id?: number|string|undefined;
+  geometry: Geometry;
+  properties: any;
+}
+
+export interface DataOptions{
+  controlPosition?: ControlPosition;
+  controls?: string[];
+  drawingMode?: string;
+  featureFactory?: (geometry: Geometry) => Feature;
+  map?: GoogleMap;
+  style?: () => void;
+}
+
+export interface DataMouseEvent extends MouseEvent {
+  feature: Feature;
+}
+
+export interface GeoJsonOptions {
+  idPropertyName: string;
+}
+
+export interface Geometry {
+  type: string;
+}
+
+/**
+ * Identifiers used to specify the placement of controls on the map. Controls are
+ * positioned relative to other controls in the same layout position. Controls that
+ * are added first are positioned closer to the edge of the map.
+ */
+export enum ControlPosition {
+  BOTTOM_CENTER,
+  BOTTOM_LEFT,
+  BOTTOM_RIGHT,
+  LEFT_BOTTOM,
+  LEFT_CENTER,
+  LEFT_TOP,
+  RIGHT_BOTTOM,
+  RIGHT_CENTER,
+  RIGHT_TOP,
+  TOP_CENTER,
+  TOP_LEFT,
+  TOP_RIGHT
+}
+
+export enum MapTypeId {
+  /** This map type displays a transparent layer of major streets on satellite images. */
+  HYBRID,
+  /** This map type displays a normal street map. */
+  ROADMAP,
+  /** This map type displays satellite images. */
+  SATELLITE,
+  /** This map type displays maps with physical features such as terrain and vegetation. */
+  TERRAIN
+}
+
+/***** Controls *****/
+/** Options for the rendering of the map type control. */
+export interface MapTypeControlOptions {
+  /** IDs of map types to show in the control. */
+  mapTypeIds?: (MapTypeId|string)[];
+  /**
+   * Position id. Used to specify the position of the control on the map.
+   * The default position is TOP_RIGHT.
+   */
+  position?: ControlPosition;
+  /** Style id. Used to select what style of map type control to display. */
+  style?: MapTypeControlStyle;
+}
+
+export enum MapTypeControlStyle {
+  DEFAULT,
+  DROPDOWN_MENU,
+  HORIZONTAL_BAR
+}
+
+export interface OverviewMapControlOptions {
+  opened?: boolean;
+}
+
+/** Options for the rendering of the pan control. */
+export interface PanControlOptions {
+  /**
+   * Position id. Used to specify the position of the control on the map.
+   * The default position is TOP_LEFT.
+   */
+  position?: ControlPosition;
+}
+
+/** Options for the rendering of the rotate control. */
+export interface RotateControlOptions {
+  /**
+   * Position id. Used to specify the position of the control on the map.
+   * The default position is TOP_LEFT.
+   */
+  position?: ControlPosition;
+}
+
+/** Options for the rendering of the scale control. */
+export interface ScaleControlOptions {
+  /** Style id. Used to select what style of scale control to display. */
+  style?: ScaleControlStyle;
+}
+
+export enum ScaleControlStyle {
+  DEFAULT
+}
+
+/** Options for the rendering of the Street View pegman control on the map. */
+export interface StreetViewControlOptions {
+  /**
+   * Position id. Used to specify the position of the control on the map. The
+   * default position is embedded within the navigation (zoom and pan) controls.
+   * If this position is empty or the same as that specified in the
+   * zoomControlOptions or panControlOptions, the Street View control will be
+   * displayed as part of the navigation controls. Otherwise, it will be displayed
+   * separately.
+   */
+  position?: ControlPosition;
+}
+
+/** Options for the rendering of the zoom control. */
+export interface ZoomControlOptions {
+  /**
+   * Position id. Used to specify the position of the control on the map.
+   * The default position is TOP_LEFT.
+   */
+  position?: ControlPosition;
+  style?: ZoomControlStyle;
+}
+
+export enum ZoomControlStyle {
+  DEFAULT,
+  LARGE,
+  SMALL
+}
+
+/** Options for the rendering of the fullscreen control. */
+export interface FullscreenControlOptions {
+  /**
+   * Position id. Used to specify the position of the control on the map.
+   * The default position is RIGHT_TOP.
+   */
+  position?: ControlPosition;
 }

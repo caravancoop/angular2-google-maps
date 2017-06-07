@@ -1,70 +1,59 @@
-import {AfterContentInit, ContentChildren, Directive, EventEmitter, OnChanges, OnDestroy, QueryList, SimpleChanges} from '@angular/core';
-import {Subscription} from 'rxjs/Subscription';
+import { AfterContentInit, ContentChildren, Directive, EventEmitter, OnChanges, OnDestroy, QueryList, SimpleChanges, Input, Output } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
 
-import {PolyMouseEvent} from '../services/google-maps-types';
-import {PolylineManager} from '../services/managers/polyline-manager';
-
-import {SebmGoogleMapPolylinePoint} from './google-map-polyline-point';
+import { PolyMouseEvent } from '../services/google-maps-types';
+import { PolylineManager } from '../services/managers/polyline-manager';
+import { AgmPolylinePoint } from './polyline-point';
 
 let polylineId = 0;
 /**
- * SebmGoogleMapPolyline renders a polyline on a {@link SebmGoogleMap}
+ * AgmPolyline renders a polyline on a {@link AgmMap}
  *
  * ### Example
  * ```typescript
- * import { Component } from 'angular2/core';
- * import { SebmGoogleMap, SebmGooglePolyline, SebmGooglePolylinePoint } from
- * 'angular2-google-maps/core';
+ * import { Component } from '@angular/core';
  *
  * @Component({
  *  selector: 'my-map-cmp',
- *  directives: [SebmGoogleMap, SebmGooglePolyline, SebmGooglePolylinePoint],
  *  styles: [`
- *    .sebm-google-map-container {
+ *    .agm-map-container {
  *      height: 300px;
  *    }
  * `],
  *  template: `
- *    <sebm-google-map [latitude]="lat" [longitude]="lng" [zoom]="zoom">
- *      <sebm-google-map-polyline>
- *          <sebm-google-map-polyline-point [latitude]="latA" [longitude]="lngA">
- *          </sebm-google-map-polyline-point>
- *          <sebm-google-map-polyline-point [latitude]="latB" [longitude]="lngB">
- *          </sebm-google-map-polyline-point>
- *      </sebm-google-map-polyline>
- *    </sebm-google-map>
+ *    <agm-map [latitude]="lat" [longitude]="lng" [zoom]="zoom">
+ *      <agm-polyline>
+ *          <agm-polyline-point [latitude]="latA" [longitude]="lngA">
+ *          </agm-polyline-point>
+ *          <agm-polyline-point [latitude]="latB" [longitude]="lngB">
+ *          </agm-polyline-point>
+ *      </agm-polyline>
+ *    </agm-map>
  *  `
  * })
  * ```
  */
 @Directive({
-  selector: 'sebm-google-map-polyline',
-  inputs: [
-    'clickable', 'draggable: polylineDraggable', 'editable', 'geodesic', 'strokeColor',
-    'strokeWeight', 'strokeOpacity', 'visible', 'zIndex'
-  ],
-  outputs: [
-    'lineClick', 'lineDblClick', 'lineDrag', 'lineDragEnd', 'lineMouseDown', 'lineMouseMove',
-    'lineMouseOut', 'lineMouseOver', 'lineMouseUp', 'lineRightClick'
-  ]
+  selector: 'agm-polyline'
 })
-export class SebmGoogleMapPolyline implements OnDestroy, OnChanges, AfterContentInit {
+export class AgmPolyline implements OnDestroy, OnChanges, AfterContentInit {
   /**
    * Indicates whether this Polyline handles mouse events. Defaults to true.
    */
-  clickable: boolean = true;
+  @Input() clickable: boolean = true;
 
   /**
    * If set to true, the user can drag this shape over the map. The geodesic property defines the
    * mode of dragging. Defaults to false.
    */
-  draggable: boolean = false;
+  // tslint:disable-next-line:no-input-rename
+  @Input('polylineDraggable') draggable: boolean = false;
 
   /**
    * If set to true, the user can edit this shape by dragging the control points shown at the
    * vertices and on each segment. Defaults to false.
    */
-  editable: boolean = false;
+  @Input() editable: boolean = false;
 
   /**
    * When true, edges of the polygon are interpreted as geodesic and will follow the curvature of
@@ -72,92 +61,92 @@ export class SebmGoogleMapPolyline implements OnDestroy, OnChanges, AfterContent
    * Note that the shape of a geodesic polygon may appear to change when dragged, as the dimensions
    * are maintained relative to the surface of the earth. Defaults to false.
    */
-  geodesic: boolean = false;
+  @Input() geodesic: boolean = false;
 
   /**
    * The stroke color. All CSS3 colors are supported except for extended named colors.
    */
-  strokeColor: string;
+  @Input() strokeColor: string;
 
   /**
    * The stroke opacity between 0.0 and 1.0.
    */
-  strokeOpacity: number;
+  @Input() strokeOpacity: number;
 
   /**
    * The stroke width in pixels.
    */
-  strokeWeight: number;
+  @Input() strokeWeight: number;
 
   /**
    * Whether this polyline is visible on the map. Defaults to true.
    */
-  visible: boolean = true;
+  @Input() visible: boolean = true;
 
   /**
    * The zIndex compared to other polys.
    */
-  zIndex: number;
+  @Input() zIndex: number;
 
   /**
    * This event is fired when the DOM click event is fired on the Polyline.
    */
-  lineClick: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
+  @Output() lineClick: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
 
   /**
    * This event is fired when the DOM dblclick event is fired on the Polyline.
    */
-  lineDblClick: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
+  @Output() lineDblClick: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
 
   /**
    * This event is repeatedly fired while the user drags the polyline.
    */
-  lineDrag: EventEmitter<MouseEvent> = new EventEmitter<MouseEvent>();
+  @Output() lineDrag: EventEmitter<MouseEvent> = new EventEmitter<MouseEvent>();
 
   /**
    * This event is fired when the user stops dragging the polyline.
    */
-  lineDragEnd: EventEmitter<MouseEvent> = new EventEmitter<MouseEvent>();
+  @Output() lineDragEnd: EventEmitter<MouseEvent> = new EventEmitter<MouseEvent>();
 
   /**
    * This event is fired when the user starts dragging the polyline.
    */
-  lineDragStart: EventEmitter<MouseEvent> = new EventEmitter<MouseEvent>();
+  @Output() lineDragStart: EventEmitter<MouseEvent> = new EventEmitter<MouseEvent>();
 
   /**
    * This event is fired when the DOM mousedown event is fired on the Polyline.
    */
-  lineMouseDown: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
+  @Output() lineMouseDown: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
 
   /**
    * This event is fired when the DOM mousemove event is fired on the Polyline.
    */
-  lineMouseMove: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
+  @Output() lineMouseMove: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
 
   /**
    * This event is fired on Polyline mouseout.
    */
-  lineMouseOut: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
+  @Output() lineMouseOut: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
 
   /**
    * This event is fired on Polyline mouseover.
    */
-  lineMouseOver: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
+  @Output() lineMouseOver: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
 
   /**
    * This event is fired whe the DOM mouseup event is fired on the Polyline
    */
-  lineMouseUp: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
+  @Output() lineMouseUp: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
 
   /**
    * This even is fired when the Polyline is right-clicked on.
    */
-  lineRightClick: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
+  @Output() lineRightClick: EventEmitter<PolyMouseEvent> = new EventEmitter<PolyMouseEvent>();
 
   /**
    * @internal
    */
-  @ContentChildren(SebmGoogleMapPolylinePoint) points: QueryList<SebmGoogleMapPolylinePoint>;
+  @ContentChildren(AgmPolylinePoint) points: QueryList<AgmPolylinePoint>;
 
   private static _polylineOptionsAttributes: Array<string> = [
     'draggable', 'editable', 'visible', 'geodesic', 'strokeColor', 'strokeOpacity', 'strokeWeight',
@@ -173,7 +162,7 @@ export class SebmGoogleMapPolyline implements OnDestroy, OnChanges, AfterContent
   /** @internal */
   ngAfterContentInit() {
     if (this.points.length) {
-      this.points.forEach((point: SebmGoogleMapPolylinePoint) => {
+      this.points.forEach((point: AgmPolylinePoint) => {
         const s = point.positionChanged.subscribe(
             () => { this._polylineManager.updatePolylinePoints(this); });
         this._subscriptions.push(s);
@@ -195,7 +184,7 @@ export class SebmGoogleMapPolyline implements OnDestroy, OnChanges, AfterContent
 
     let options: {[propName: string]: any} = {};
     const optionKeys = Object.keys(changes).filter(
-        k => SebmGoogleMapPolyline._polylineOptionsAttributes.indexOf(k) !== -1);
+        k => AgmPolyline._polylineOptionsAttributes.indexOf(k) !== -1);
     optionKeys.forEach(k => options[k] = changes[k].currentValue);
     this._polylineManager.setPolylineOptions(this, options);
   }
@@ -227,7 +216,7 @@ export class SebmGoogleMapPolyline implements OnDestroy, OnChanges, AfterContent
   }
 
   /** @internal */
-  _getPoints(): Array<SebmGoogleMapPolylinePoint> {
+  _getPoints(): Array<AgmPolylinePoint> {
     if (this.points) {
       return this.points.toArray();
     }
